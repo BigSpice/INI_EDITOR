@@ -28,12 +28,15 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import org.ini4j.*;
 import org.ini4j.Profile.Section;
+import java.util.concurrent.TimeUnit;
 /**
  *
  * @author jkaweesa
  */
 public class Frame extends javax.swing.JFrame {
-    public int Res;
+    public int Progress;
+        public int Res;
+
     public String Path;
     TreePath treePath;
     ArrayList<String> HeaderArr= new ArrayList<String>();
@@ -51,13 +54,13 @@ DefaultMutableTreeNode ParentNode;
      */
     public Frame() {
         initComponents();
-    
+    Progress_Bar.setMaximum(100);
+        Progress_Bar.setMinimum(0);
+
                   ValueTextBox.setText("");
                   Section.setText("");
-
                   Key.setText("");
                   Value.setText("");
-
                   ValueTextBox.setToolTipText("Enter the Value you would like to assign Here");
                   Create_New_Section.setToolTipText("Click to Create the section");
 
@@ -92,6 +95,8 @@ DefaultMutableTreeNode ParentNode;
         jLabel2 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         Delete_button = new javax.swing.JButton();
+        Reload_File = new javax.swing.JButton();
+        Progress_Bar = new javax.swing.JProgressBar();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -290,7 +295,7 @@ DefaultMutableTreeNode ParentNode;
                             .addComponent(jLabel1)
                             .addComponent(jLabel2)
                             .addComponent(jLabel7))
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addGap(0, 208, Short.MAX_VALUE))
                     .addComponent(Delete_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -317,6 +322,13 @@ DefaultMutableTreeNode ParentNode;
         jTextField1.getAccessibleContext().setAccessibleName("ValueBox");
         jLabel2.getAccessibleContext().setAccessibleName("Assign Value");
 
+        Reload_File.setText("Reload");
+        Reload_File.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Reload_FileActionPerformed(evt);
+            }
+        });
+
         jMenuBar1.setToolTipText("");
 
         jMenu1.setText("File");
@@ -340,30 +352,38 @@ DefaultMutableTreeNode ParentNode;
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Progress_Bar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Reload_File, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(Progress_Bar, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Reload_File)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -396,8 +416,27 @@ catch(IOException e){
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
         // TODO add your handling code here:
         openfile();
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
+        expandAllNodes(JTree);
 
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+ public  void Wait() 
+
+ { 
+
+
+ try { 
+
+
+ Thread.sleep(400); 
+
+
+ } 
+
+ catch (Exception e) { 
+
+ } 
+
+ } 
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField1ActionPerformed
@@ -448,6 +487,28 @@ JOptionPane.showMessageDialog(this,"There Is no Key to Delete/The Key is not val
 
     }//GEN-LAST:event_Apply_ButtonFocusGained
 
+    private void Reload_FileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Reload_FileActionPerformed
+                  ValueTextBox.setText("");
+                  Section.setText("");
+                  Key.setText("");
+                  Value.setText("");
+                  try{
+                  OpenFile(Path);
+                  expandAllNodes(JTree);
+                  
+                   }catch(IOException e){
+                    System.out.println(e.getMessage());  
+}
+    }//GEN-LAST:event_Reload_FileActionPerformed
+private void expandAllNodes(JTree tree) {
+    int j = tree.getRowCount();
+    int i = 0;
+    while(i < j) {
+        tree.expandRow(i);
+        i += 1;
+        j = tree.getRowCount();
+    }
+}
     /**
      * @param args the command line arguments
      */
@@ -511,6 +572,9 @@ JOptionPane.showMessageDialog(this,"There Is no Key to Delete/The Key is not val
 
    public void OpenFile( String path ) throws IOException {
       //load( path );
+      Progress = Progress + 10;
+       Progress_Bar.setValue(Progress); 
+
     Read_INI(path);
 //System.out.println(Arrays.asList()); // method 1
    }
@@ -521,20 +585,27 @@ JOptionPane.showMessageDialog(this,"There Is no Key to Delete/The Key is not val
         ParentNode = new DefaultMutableTreeNode(Path.substring(Path.lastIndexOf("\\")+1, Path.length()));
                                  JTree.setModel(new javax.swing.tree.DefaultTreeModel(ParentNode));
                                  
-                                 
+           Progress = Progress + 20;
+       Progress_Bar.setValue(Progress);                       
                                  
 System.out.println("Number of sections: "+ini.size()+"\n");
         for (String sectionName: ini.keySet()) {
             HeaderNode=new DefaultMutableTreeNode(sectionName);
                ParentNode.add(HeaderNode);
+            //To make sure the user Does not Rush  Wait();
+                 Progress = Progress + 40;
+       Progress_Bar.setValue(Progress); 
            // System.out.println("["+sectionName+"]");
             Section section = ini.get(sectionName);
             for (String optionKey: section.keySet()) {
                  ContentNode=new DefaultMutableTreeNode(optionKey);
                HeaderNode.add(ContentNode);
+               Progress = Progress + 30;
+       Progress_Bar.setValue(Progress); 
               //  System.out.println("\t"+optionKey+"="+section.get(optionKey));
             }
         }
+        
 } 
 catch (IOException e) {
      System.out.println("Configuration parse error: {}"+e.getMessage());
@@ -569,6 +640,8 @@ catch (IOException e) {
     private javax.swing.JButton Delete_button;
     public javax.swing.JTree JTree;
     private javax.swing.JTextField Key;
+    private javax.swing.JProgressBar Progress_Bar;
+    private javax.swing.JButton Reload_File;
     private javax.swing.JTextField Section;
     private javax.swing.JTextField Value;
     private javax.swing.JTextField ValueTextBox;
