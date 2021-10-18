@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import  java.util.Properties;
+import javax.swing.JOptionPane;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import org.ini4j.*;
 import org.ini4j.Profile.Section;
 /**
@@ -35,35 +38,45 @@ public class Frame extends javax.swing.JFrame {
     TreePath treePath;
     ArrayList<String> HeaderArr= new ArrayList<String>();
     ArrayList<String> ChildArr= new ArrayList<String>();
-
+Wini ini; 
 DefaultMutableTreeNode ParentNode;
  DefaultMutableTreeNode HeaderNode;
  DefaultMutableTreeNode ContentNode;
  Map< String, String > kv;
+ String Current_Section;
+  String Current_Selection;
+
     /**
      * Creates new form Frame
      */
     public Frame() {
         initComponents();
     
-   
+                  ValueTextBox.setText("");
+                  Section.setText("");
+
+                  Key.setText("");
+                  Value.setText("");
+
+                  ValueTextBox.setToolTipText("Enter the Value you would like to assign Here");
+                  Create_New_Section.setToolTipText("Click to Create the section");
+
     }
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jProgressBar1 = new javax.swing.JProgressBar();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         JTree = new javax.swing.JTree();
         jPanel2 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jTextField3 = new javax.swing.JTextField();
+        Create_New_Section = new javax.swing.JButton();
+        Section = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
-        jTextField4 = new javax.swing.JTextField();
+        Key = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
-        jTextField5 = new javax.swing.JTextField();
+        Value = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
@@ -72,12 +85,13 @@ DefaultMutableTreeNode ParentNode;
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
         jPanel4 = new javax.swing.JPanel();
-        jTextField2 = new javax.swing.JTextField();
+        ValueTextBox = new javax.swing.JTextField();
         jTextField1 = new javax.swing.JTextField();
-        jButton2 = new javax.swing.JButton();
+        Apply_Button = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
+        Delete_button = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -107,8 +121,13 @@ DefaultMutableTreeNode ParentNode;
 
         jPanel2.setBorder(new javax.swing.border.MatteBorder(null));
 
-        jButton1.setText("Create");
-        jButton1.setToolTipText("Creates The new Key under the Specifed Section");
+        Create_New_Section.setText("Create");
+        Create_New_Section.setToolTipText("Creates The new Key under the Specifed Section");
+        Create_New_Section.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Create_New_SectionActionPerformed(evt);
+            }
+        });
 
         jLabel3.setText("Section");
         jLabel3.setToolTipText("");
@@ -129,7 +148,7 @@ DefaultMutableTreeNode ParentNode;
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Create_New_Section, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGap(0, 0, Short.MAX_VALUE)
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -139,9 +158,9 @@ DefaultMutableTreeNode ParentNode;
                                     .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.LEADING))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jTextField5, javax.swing.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
-                                    .addComponent(jTextField4)
-                                    .addComponent(jTextField3)))))
+                                    .addComponent(Value, javax.swing.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
+                                    .addComponent(Key)
+                                    .addComponent(Section)))))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
@@ -160,18 +179,18 @@ DefaultMutableTreeNode ParentNode;
                 .addComponent(jLabel8)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Section, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Key, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Value, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)
+                .addComponent(Create_New_Section, javax.swing.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel6)
                 .addContainerGap())
@@ -182,6 +201,7 @@ DefaultMutableTreeNode ParentNode;
         jLabel9.setFont(new java.awt.Font("Verdana", 1, 11)); // NOI18N
         jLabel9.setText("HELP");
 
+        jTextArea1.setEditable(false);
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
         jScrollPane1.setViewportView(jTextArea1);
@@ -205,22 +225,36 @@ DefaultMutableTreeNode ParentNode;
                 .addContainerGap()
                 .addComponent(jLabel9)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         jPanel4.setBorder(new javax.swing.border.MatteBorder(null));
 
+        ValueTextBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ValueTextBoxActionPerformed(evt);
+            }
+        });
+
+        jTextField1.setEditable(false);
+        jTextField1.setFocusTraversalPolicyProvider(true);
+        jTextField1.setFocusable(false);
         jTextField1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jTextField1ActionPerformed(evt);
             }
         });
 
-        jButton2.setText("Apply");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        Apply_Button.setText("Apply");
+        Apply_Button.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                Apply_ButtonFocusGained(evt);
+            }
+        });
+        Apply_Button.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                Apply_ButtonActionPerformed(evt);
             }
         });
 
@@ -232,6 +266,15 @@ DefaultMutableTreeNode ParentNode;
         jLabel7.setFont(new java.awt.Font("Verdana", 1, 11)); // NOI18N
         jLabel7.setText("Edit");
 
+        Delete_button.setBackground(new java.awt.Color(255, 0, 0));
+        Delete_button.setFont(new java.awt.Font("Segoe UI", 1, 10)); // NOI18N
+        Delete_button.setText("DELETE");
+        Delete_button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Delete_buttonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -239,15 +282,16 @@ DefaultMutableTreeNode ParentNode;
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Apply_Button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(ValueTextBox)
+                    .addComponent(jTextField1)
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addComponent(jLabel2)
                             .addComponent(jLabel7))
-                        .addGap(0, 208, Short.MAX_VALUE))
-                    .addComponent(jTextField2)
-                    .addComponent(jTextField1))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(Delete_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
@@ -262,11 +306,18 @@ DefaultMutableTreeNode ParentNode;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(ValueTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton2)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(Apply_Button)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(Delete_button)
+                .addContainerGap())
         );
+
+        jTextField1.getAccessibleContext().setAccessibleName("ValueBox");
+        jLabel2.getAccessibleContext().setAccessibleName("Assign Value");
+
+        jMenuBar1.setToolTipText("");
 
         jMenu1.setText("File");
 
@@ -308,9 +359,9 @@ DefaultMutableTreeNode ParentNode;
                     .addGroup(layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
@@ -318,9 +369,29 @@ DefaultMutableTreeNode ParentNode;
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton2ActionPerformed
+    private void Apply_ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Apply_ButtonActionPerformed
+    try{
+        if(ValueTextBox.getText().length()==0||(ValueTextBox.getText().length()==0)){
+
+        JOptionPane.showMessageDialog(this,"There Is No Selected Key To Edit!");
+
+}else if(Current_Section == null || Current_Selection == null){
+        JOptionPane.showMessageDialog(this,"There Is No Selected Key To Edit!");
+                }
+else{
+      ini.put(Current_Section,Current_Selection,ValueTextBox.getText());
+ 
+      ini.store();
+        
+        }
+   
+        
+    }
+catch(IOException e){
+          System.out.println(e.getMessage()); 
+}     
+ 
+    }//GEN-LAST:event_Apply_ButtonActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
         // TODO add your handling code here:
@@ -330,6 +401,52 @@ DefaultMutableTreeNode ParentNode;
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField1ActionPerformed
+
+    private void Create_New_SectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Create_New_SectionActionPerformed
+
+          try{
+        if(Section.getText().length()==0||(Section.getText().length()==0)||Key.getText().length()==0||(Key.getText().length()==0)||Value.getText().length()==0||(Value.getText().length()==0)){
+
+        JOptionPane.showMessageDialog(this,"There is an Empty Field!");
+
+}
+else{
+      ini.put(Section.getText(),Key.getText(),Value.getText());
+ 
+      ini.store();
+        
+        }
+   
+        
+    }
+catch(IOException e){
+          System.out.println(e.getMessage()); 
+}     
+    }//GEN-LAST:event_Create_New_SectionActionPerformed
+
+    private void Delete_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Delete_buttonActionPerformed
+if(Current_Selection != null){
+        int dialogResult = JOptionPane.showConfirmDialog(this, "Do you want to delete the Following Key?"+Current_Selection);
+
+if(dialogResult == 0) {
+  System.out.println("Yes option");
+} else {
+  System.out.println("No Option");
+}   
+}
+else{
+JOptionPane.showMessageDialog(this,"There Is no Key to Delete/The Key is not valid!");
+}// TODO add your handling code here:
+    }//GEN-LAST:event_Delete_buttonActionPerformed
+
+    private void ValueTextBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ValueTextBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_ValueTextBoxActionPerformed
+
+    private void Apply_ButtonFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_Apply_ButtonFocusGained
+        // TODO add your handling code here:
+
+    }//GEN-LAST:event_Apply_ButtonFocusGained
 
     /**
      * @param args the command line arguments
@@ -361,6 +478,7 @@ DefaultMutableTreeNode ParentNode;
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
+               
                 new Frame().setVisible(true);
             }
         });
@@ -381,16 +499,15 @@ DefaultMutableTreeNode ParentNode;
      Path =  selectedFile.getAbsolutePath();
      try{
     OpenFile(Path);
+     JTree.getSelectionModel().addTreeSelectionListener(new Selector());
+    JTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
     }catch(IOException e){
+                    System.out.println(e.getMessage());  
 }
 }
 
 }
-   private Pattern  _section  = Pattern.compile( "\\s*\\[([^]]*)\\]\\s*" );
-   private Pattern  _keyValue = Pattern.compile( "\\s*([^=]*)=(.*)" );
-   private Map< String,
-      Map< String,
-         String >>  _entries  = new HashMap<>();
+  
 
    public void OpenFile( String path ) throws IOException {
       //load( path );
@@ -400,19 +517,7 @@ DefaultMutableTreeNode ParentNode;
     public void Read_INI(String filename)
     {
         try {
-        Wini ini = new Wini(new File(filename));
-        
-        /*
-      Map<String, Map<String, Object>> result = new HashMap<>();
-      for (Map.Entry<String, Profile.Section> e : ini.entrySet()) {
-        Map<String, Object> section = new HashMap<>();
-        for (Map.Entry<String, String> s : e.getValue().entrySet()) {
-          section.put(s.getKey(), s.getValue());
-        }
-        result.put(e.getKey(), section);
-      */
-        
-        
+         ini = new Wini(new File(filename));
         ParentNode = new DefaultMutableTreeNode(Path.substring(Path.lastIndexOf("\\")+1, Path.length()));
                                  JTree.setModel(new javax.swing.tree.DefaultTreeModel(ParentNode));
                                  
@@ -422,12 +527,12 @@ System.out.println("Number of sections: "+ini.size()+"\n");
         for (String sectionName: ini.keySet()) {
             HeaderNode=new DefaultMutableTreeNode(sectionName);
                ParentNode.add(HeaderNode);
-            System.out.println("["+sectionName+"]");
+           // System.out.println("["+sectionName+"]");
             Section section = ini.get(sectionName);
             for (String optionKey: section.keySet()) {
                  ContentNode=new DefaultMutableTreeNode(optionKey);
                HeaderNode.add(ContentNode);
-                System.out.println("\t"+optionKey+"="+section.get(optionKey));
+              //  System.out.println("\t"+optionKey+"="+section.get(optionKey));
             }
         }
 } 
@@ -436,87 +541,37 @@ catch (IOException e) {
       throw new RuntimeException("Configuration parse error " + filename + ": " + e.getMessage());
     }
   }
-    
-   public void load( String path ) throws IOException {
-      try( BufferedReader br = new BufferedReader( new FileReader( path ))) {
-         String line;
-         String section = null;
-         while(( line = br.readLine()) != null ) {
-            Matcher m = _section.matcher( line );
-            if( m.matches()) {
-               section = m.group( 1 ).trim();
-                         System.out.println(line);
-                                 
-                               //  HeaderArr.add(line);
-
-                                
-                                
-            }
-            else if( section != null ) {
-                 for(int i = 0; i < HeaderArr.size(); i++) {  
-                // HeaderNode=new DefaultMutableTreeNode(HeaderArr.get(i));
-               // ParentNode.add(HeaderNode);
-                 }
-   // System.out.print(HeaderArr.get(i));
+  public void ReturnVal_fromKey(String Key){
       
-                 
-               m = _keyValue.matcher(line);
-              
-               if( m.matches()) {
-                  String key   = m.group( 1 ).trim();
-                System.out.println(key );
-          
-                  String value = m.group( 2 ).trim();
-                 kv = _entries.get( section );
-                  if( kv == null ) {
-                     _entries.put( section, kv = new HashMap<>());   
-                  }
-                  kv.put( key, value );
+  }
+  private class Selector implements TreeSelectionListener {
+    public void valueChanged(TreeSelectionEvent event) {
+      MutableTreeNode CurrentNode = (MutableTreeNode) event.getNewLeadSelectionPath().getLastPathComponent();
+      Object Selected = event.getNewLeadSelectionPath().getLastPathComponent();
+      Object Parent = CurrentNode.getParent();
+      String out = Parent.toString();
+      Ini.Section section = ini.get(out);
+      Object Value = section.get(Selected.toString());
+      jTextField1.setText(Value.toString());
+      System.out.println("" + out + " Has " + Selected + " = " + Value.toString());
+      Current_Section = out;
+      Current_Selection = Selected.toString();
+     // System.out.println("" + obj.toString());
 
-             }
-                 
-            }
-         }
-     
-      }
-}
+    }
+  }
+   
 
-   public String getString( String section, String key, String defaultvalue ) {
-      Map< String, String > kv = _entries.get( section );
-      if( kv == null ) {
-         return defaultvalue;
-      }
-      return kv.get( key );
-   }
-
-   public int getInt( String section, String key, int defaultvalue ) {
-      Map< String, String > kv = _entries.get( section );
-      if( kv == null ) {
-         return defaultvalue;
-      }
-      return Integer.parseInt( kv.get( key ));
-   }
-
-   public float getFloat( String section, String key, float defaultvalue ) {
-      Map< String, String > kv = _entries.get( section );
-      if( kv == null ) {
-         return defaultvalue;
-      }
-      return Float.parseFloat( kv.get( key ));
-   }
-
-   public double getDouble( String section, String key, double defaultvalue ) {
-      Map< String, String > kv = _entries.get( section );
-      if( kv == null ) {
-         return defaultvalue;
-      }
-      return Double.parseDouble( kv.get( key ));
-   }
-
+ 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Apply_Button;
+    private javax.swing.JButton Create_New_Section;
+    private javax.swing.JButton Delete_button;
     public javax.swing.JTree JTree;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JTextField Key;
+    private javax.swing.JTextField Section;
+    private javax.swing.JTextField Value;
+    private javax.swing.JTextField ValueTextBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -534,14 +589,9 @@ catch (IOException e) {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField4;
-    private javax.swing.JTextField jTextField5;
     // End of variables declaration//GEN-END:variables
 }
