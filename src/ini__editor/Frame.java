@@ -20,6 +20,11 @@ import javax.swing.JTree;
 import javax.swing.tree.*;
  import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import  java.util.Properties;
+import org.ini4j.*;
+import org.ini4j.Profile.Section;
 /**
  *
  * @author jkaweesa
@@ -29,9 +34,12 @@ public class Frame extends javax.swing.JFrame {
     public String Path;
     TreePath treePath;
     ArrayList<String> HeaderArr= new ArrayList<String>();
+    ArrayList<String> ChildArr= new ArrayList<String>();
+
 DefaultMutableTreeNode ParentNode;
-
-
+ DefaultMutableTreeNode HeaderNode;
+ DefaultMutableTreeNode ContentNode;
+ Map< String, String > kv;
     /**
      * Creates new form Frame
      */
@@ -385,11 +393,50 @@ DefaultMutableTreeNode ParentNode;
          String >>  _entries  = new HashMap<>();
 
    public void OpenFile( String path ) throws IOException {
-      load( path );
-     // System.out.println(getString("Dynamic_variables","Port","Null"));   
-
+      //load( path );
+    Read_INI(path);
+//System.out.println(Arrays.asList()); // method 1
    }
-
+    public void Read_INI(String filename)
+    {
+        try {
+        Wini ini = new Wini(new File(filename));
+        
+        /*
+      Map<String, Map<String, Object>> result = new HashMap<>();
+      for (Map.Entry<String, Profile.Section> e : ini.entrySet()) {
+        Map<String, Object> section = new HashMap<>();
+        for (Map.Entry<String, String> s : e.getValue().entrySet()) {
+          section.put(s.getKey(), s.getValue());
+        }
+        result.put(e.getKey(), section);
+      */
+        
+        
+        ParentNode = new DefaultMutableTreeNode(Path.substring(Path.lastIndexOf("\\")+1, Path.length()));
+                                 JTree.setModel(new javax.swing.tree.DefaultTreeModel(ParentNode));
+                                 
+                                 
+                                 
+System.out.println("Number of sections: "+ini.size()+"\n");
+        for (String sectionName: ini.keySet()) {
+            HeaderNode=new DefaultMutableTreeNode(sectionName);
+               ParentNode.add(HeaderNode);
+            System.out.println("["+sectionName+"]");
+            Section section = ini.get(sectionName);
+            for (String optionKey: section.keySet()) {
+                 ContentNode=new DefaultMutableTreeNode(optionKey);
+               HeaderNode.add(ContentNode);
+                System.out.println("\t"+optionKey+"="+section.get(optionKey));
+            }
+        }
+} 
+catch (IOException e) {
+     System.out.println("Configuration parse error: {}"+e.getMessage());
+      throw new RuntimeException("Configuration parse error " + filename + ": " + e.getMessage());
+    }
+  }
+    
    public void load( String path ) throws IOException {
       try( BufferedReader br = new BufferedReader( new FileReader( path ))) {
          String line;
@@ -399,43 +446,35 @@ DefaultMutableTreeNode ParentNode;
             if( m.matches()) {
                section = m.group( 1 ).trim();
                          System.out.println(line);
-                                 ParentNode = new DefaultMutableTreeNode(Path.substring(Path.lastIndexOf("\\")+1, Path.length()));
-                                 JTree.setModel(new javax.swing.tree.DefaultTreeModel(ParentNode));
- HeaderArr.add(line);
-/*
-                                  treePath = JTree.getSelectionPath();
-                                              DefaultMutableTreeNode SelectedNode;
-            SelectedNode = (DefaultMutableTreeNode) treePath
-                    .getLastPathComponent();
-    int index;
-            index = SelectedNode.getIndex(SelectedNode) + 1;
-                                ParentNode.insert(HeaderNode, index);
-  */                             
-                                
+                                 
+                               //  HeaderArr.add(line);
+
                                 
                                 
             }
             else if( section != null ) {
                  for(int i = 0; i < HeaderArr.size(); i++) {  
-                DefaultMutableTreeNode HeaderNode=new DefaultMutableTreeNode(HeaderArr.get(i));
-                ParentNode.add(HeaderNode);
-
-    System.out.print(HeaderArr.get(i));
-      }
-                
-               m = _keyValue.matcher( line );
+                // HeaderNode=new DefaultMutableTreeNode(HeaderArr.get(i));
+               // ParentNode.add(HeaderNode);
+                 }
+   // System.out.print(HeaderArr.get(i));
+      
+                 
+               m = _keyValue.matcher(line);
+              
                if( m.matches()) {
-                   
                   String key   = m.group( 1 ).trim();
-                                           System.out.println(key);
-
+                System.out.println(key );
+          
                   String value = m.group( 2 ).trim();
-                  Map< String, String > kv = _entries.get( section );
+                 kv = _entries.get( section );
                   if( kv == null ) {
                      _entries.put( section, kv = new HashMap<>());   
                   }
                   kv.put( key, value );
+
              }
+                 
             }
          }
      
