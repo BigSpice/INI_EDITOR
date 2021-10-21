@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package ini__editor;
-package windows.prefs;
+//package windows.prefs;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -22,6 +22,7 @@ import javax.swing.tree.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import  java.util.Properties;
 import javax.swing.JOptionPane;
 import javax.swing.event.TreeSelectionEvent;
@@ -29,6 +30,7 @@ import javax.swing.event.TreeSelectionListener;
 import org.ini4j.*;
 import org.ini4j.Profile.Section;
 import java.util.concurrent.TimeUnit;
+import javax.swing.filechooser.FileNameExtensionFilter;
 /**
  *
  * @author jkaweesa
@@ -36,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 public class Frame extends javax.swing.JFrame {
     public int Progress;
         public int Res;
-
+      List Section_list = new ArrayList();
     public String Path;
     TreePath treePath;
     ArrayList<String> HeaderArr= new ArrayList<String>();
@@ -48,6 +50,7 @@ DefaultMutableTreeNode ParentNode;
  Map< String, String > kv;
  String Current_Section;
   String Current_Selection;
+  boolean Section_Selected_Check=false;
 
     /**
      * Creates new form Frame
@@ -101,6 +104,7 @@ DefaultMutableTreeNode ParentNode;
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
+        jMenuItem2 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -209,6 +213,7 @@ DefaultMutableTreeNode ParentNode;
         jTextArea1.setEditable(false);
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
+        jTextArea1.setText("When Editing A Key Value\nPlease Ensure  to -\n-Use valid Alphanumerical Characters.\n-Do not include spaces.\nWhen Creating a Section\nPLease ensure to-\n-Fill all Values(Section,Key,Key_Value)\n-Do not Overwrite the Exisiting Sections\n");
         jScrollPane1.setViewportView(jTextArea1);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
@@ -344,6 +349,15 @@ DefaultMutableTreeNode ParentNode;
         jMenuBar1.add(jMenu1);
 
         jMenu2.setText("Edit");
+
+        jMenuItem2.setText("Create New File");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem2);
+
         jMenuBar1.add(jMenu2);
 
         setJMenuBar(jMenuBar1);
@@ -419,9 +433,46 @@ catch(IOException e){
         expandAllNodes(JTree);
 
     }//GEN-LAST:event_jMenuItem1ActionPerformed
- public  void Wait() 
+ 
+    public void Create_New_File(){
+        try{
+                    Wini Ini;
+String Pathe ="";
+            JFileChooser fileChooser = new JFileChooser();
+           fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("INI_FILES", "ini"));
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                fileChooser.setAcceptAllFileFilterUsed(true);
+fileChooser.setDialogTitle("Specify a file to save");   
+ 
+int userSelection = fileChooser.showSaveDialog(this);
+ 
+if (userSelection == JFileChooser.APPROVE_OPTION) {
+    File fileToSave = fileChooser.getSelectedFile();
+    Pathe = fileToSave.getAbsolutePath();
 
- { 
+    System.out.println("Save as file: " + Pathe);
+    
+}    Ini = new Wini(new File(Pathe));
+
+            Ini.put("block_name", "property_name_2", 45.6);
+            Ini.store();
+        // To catch basically any error related to writing to the file
+        // (The system cannot find the file specified)
+        }catch(Exception e){
+            System.err.println(e.getMessage());
+        }
+        
+        
+    }
+    
+    
+public  void Wait() 
+{ 
+     
+     int i=0;
+while(i<=2000){    
+  Progress_Bar.setValue(i);    
+  i=i+20;  
 
 
  try { 
@@ -435,7 +486,7 @@ catch(IOException e){
  catch (Exception e) { 
 
  } 
-
+}
  } 
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
         // TODO add your handling code here:
@@ -465,10 +516,32 @@ catch(IOException e){
 
     private void Delete_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Delete_buttonActionPerformed
 if(Current_Selection != null){
-        int dialogResult = JOptionPane.showConfirmDialog(this, "Do you want to delete the Following Key?"+Current_Selection);
+        int dialogResult = JOptionPane.showConfirmDialog(this, "Do you want to delete the Following?"+Current_Selection);
 
 if(dialogResult == 0) {
   System.out.println("Yes option");
+  if(Section_Selected_Check == true){
+      JOptionPane.showConfirmDialog(this, Current_Section +" is a section - ARE YOU SURE?");
+
+      
+      try{
+          System.out.println(Current_Section);
+          ini.remove(Current_Section);
+            ini.store();
+      }catch(Exception e){
+            System.err.println(e.getMessage());
+        }
+  }
+  else{
+        try{
+      ini.remove(Current_Selection);
+            ini.store();
+        }catch(Exception e){
+            System.err.println(e.getMessage());
+        }
+  }
+  
+  
 } else {
   System.out.println("No Option");
 }   
@@ -492,6 +565,9 @@ JOptionPane.showMessageDialog(this,"There Is no Key to Delete/The Key is not val
                   Section.setText("");
                   Key.setText("");
                   Value.setText("");
+                  JTree.setModel(null);
+                   Progress = Progress + 20;
+       Progress_Bar.setValue(Progress); 
                   try{
                   OpenFile(Path);
                   expandAllNodes(JTree);
@@ -500,6 +576,10 @@ JOptionPane.showMessageDialog(this,"There Is no Key to Delete/The Key is not val
                     System.out.println(e.getMessage());  
 }
     }//GEN-LAST:event_Reload_FileActionPerformed
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+Create_New_File();
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
 private void expandAllNodes(JTree tree) {
     int j = tree.getRowCount();
     int i = 0;
@@ -592,6 +672,8 @@ System.out.println("Number of sections: "+ini.size()+"\n");
         for (String sectionName: ini.keySet()) {
             HeaderNode=new DefaultMutableTreeNode(sectionName);
                ParentNode.add(HeaderNode);
+                   Section_list.add(sectionName);
+
             //To make sure the user Does not Rush  Wait();
                  Progress = Progress + 40;
        Progress_Bar.setValue(Progress); 
@@ -620,13 +702,37 @@ catch (IOException e) {
       MutableTreeNode CurrentNode = (MutableTreeNode) event.getNewLeadSelectionPath().getLastPathComponent();
       Object Selected = event.getNewLeadSelectionPath().getLastPathComponent();
       Object Parent = CurrentNode.getParent();
+       Object Value =null;
       String out = Parent.toString();
       Ini.Section section = ini.get(out);
-      Object Value = section.get(Selected.toString());
-      jTextField1.setText(Value.toString());
-      System.out.println("" + out + " Has " + Selected + " = " + Value.toString());
-      Current_Section = out;
-      Current_Selection = Selected.toString();
+       
+       // Object Value = section.get(Selected.toString());
+        
+                  //OpenFile(Path);
+                  //expandAllNodes(JTree);
+                  if(Section_list.contains(Selected.toString())){
+                       System.out.println(Selected.toString());
+                      System.out.println("Section Selected\n");
+                      jTextField1.setText(Selected.toString());
+                      Value = "";
+                      Section_Selected_Check = true;
+                     Current_Section = Selected.toString();
+                        Current_Selection = "";
+                  }else{
+                      
+                    Value = section.get(Selected.toString());
+                    jTextField1.setText(Value.toString());
+                    System.out.println("" + out + " Has " + Selected + " = " + Value.toString());
+                    Section_Selected_Check = false;
+                    Current_Section = out;
+                    Current_Selection = Selected.toString();
+                  }
+
+                  
+        
+    
+      
+    
      // System.out.println("" + obj.toString());
 
     }
@@ -658,6 +764,7 @@ catch (IOException e) {
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

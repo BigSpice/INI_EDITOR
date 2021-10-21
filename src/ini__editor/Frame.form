@@ -26,6 +26,16 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Edit"/>
           </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem2">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Create New File"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItem2ActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
         </Menu>
       </SubComponents>
     </Menu>
@@ -333,6 +343,7 @@
                 <Property name="editable" type="boolean" value="false"/>
                 <Property name="columns" type="int" value="20"/>
                 <Property name="rows" type="int" value="5"/>
+                <Property name="text" type="java.lang.String" value="When Editing A Key Value&#xa;Please Ensure  to -&#xa;-Use valid Alphanumerical Characters.&#xa;-Do not include spaces.&#xa;When Creating a Section&#xa;PLease ensure to-&#xa;-Fill all Values(Section,Key,Key_Value)&#xa;-Do not Overwrite the Exisiting Sections&#xa;"/>
               </Properties>
             </Component>
           </SubComponents>
