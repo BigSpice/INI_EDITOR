@@ -4,6 +4,8 @@
  */
 package ini__editor;
 //package windows.prefs;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -12,61 +14,101 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
-import java.io.File;     
+import java.io.File;
 import java.util.Collection;
- import java.lang.Iterable;
+import java.lang.Iterable;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.JTree;
 import javax.swing.tree.*;
- import java.io.*;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import  java.util.Properties;
+import java.util.Properties;
 import javax.swing.JOptionPane;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import org.ini4j.*;
 import org.ini4j.Profile.Section;
 import java.util.concurrent.TimeUnit;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.io.File;
+import javax.swing.JDialog;
+import javax.swing.Timer;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
 /**
  *
  * @author jkaweesa
  */
 public class Frame extends javax.swing.JFrame {
+
     public int Progress;
-        public int Res;
-      List Section_list = new ArrayList();
+    public int Res;
+    List Section_list = new ArrayList();
     public String Path;
     TreePath treePath;
-    ArrayList<String> HeaderArr= new ArrayList<String>();
-    ArrayList<String> ChildArr= new ArrayList<String>();
-Wini ini; 
-DefaultMutableTreeNode ParentNode;
- DefaultMutableTreeNode HeaderNode;
- DefaultMutableTreeNode ContentNode;
- Map< String, String > kv;
- String Current_Section;
-  String Current_Selection;
-  boolean Section_Selected_Check=false;
-
+    ArrayList<String> HeaderArr = new ArrayList<String>();
+    ArrayList<String> ChildArr = new ArrayList<String>();
+    Wini ini;
+    DefaultMutableTreeNode ParentNode;
+    DefaultMutableTreeNode HeaderNode;
+    DefaultMutableTreeNode ContentNode;
+    Map< String, String> kv;
+    String Current_Section;
+    String Current_Selection;
+    boolean Section_Selected_Check = false;
+    int TIME_VISIBLE = 3000;
     /**
      * Creates new form Frame
      */
     public Frame() {
         initComponents();
-    Progress_Bar.setMaximum(100);
+        Progress_Bar.setMaximum(100);
         Progress_Bar.setMinimum(0);
+        JTree.setModel(null);
 
-                  ValueTextBox.setText("");
-                  Section.setText("");
-                  Key.setText("");
-                  Value.setText("");
-                  ValueTextBox.setToolTipText("Enter the Value you would like to assign Here");
-                  Create_New_Section.setToolTipText("Click to Create the section");
+        ValueTextBox.setText("");
+        Section.setText("");
+        Key.setText("");
+        Value.setText("");
+        ValueTextBox.setToolTipText("Enter the Value you would like to assign Here");
+        Create_New_Section.setToolTipText("Click to Create the section");
+        File file = new File("C:\\Ciena_Corporation\\config.ini");
+        try{
+        if(isFileDirectoryExists(file)){
+           
+       // JOptionPane.showMessageDialog(null, "INI File Auto Found in: "+file.getAbsolutePath(), "IMPORTANT MESSAGE", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane pane = new JOptionPane("INI File Auto Found in: "+file.getAbsolutePath(),JOptionPane.INFORMATION_MESSAGE);
+      JDialog dialog = pane.createDialog(null, "IMPORTANT MESSAGE");
+      dialog.setAlwaysOnTop(true);
+      dialog.setModal(false);
+      dialog.setVisible(true);
+          new Timer(TIME_VISIBLE, new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          dialog.setVisible(false);
+        }
+      }).start();
+             Path = file.getAbsolutePath();
+           Read_INI(Path);
+                expandAllNodes(JTree);
 
+            }else{
+             System.out.println("INI File Could not Found in: C:/Ciena_Corporation/");
+       // JOptionPane.showMessageDialog(null, "INI File Could not Found in: C:/Ciena_Corporation/", "IMPORTANT MESSAGE", JOptionPane.INFORMATION_MESSAGE);            
+
+        }
+        }catch (NullPointerException e) {
+                System.out.println("Configuration parse error: {}" + e.getMessage());
+                throw new RuntimeException("\n Configuration parse error : " + e.getMessage());
+            } catch (Exception e) {
+                System.out.println("Unexcepted Exception");
+                e.printStackTrace();
+            }
+    
     }
 
     @SuppressWarnings("unchecked")
@@ -107,6 +149,12 @@ DefaultMutableTreeNode ParentNode;
         jMenuItem2 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("INI_EDITOR_V2.1.1");
+        setAlwaysOnTop(true);
+        setBackground(new java.awt.Color(128, 128, 128));
+        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        setIconImage(new javax.swing.ImageIcon(getClass().getResource("Icon.png")).getImage());
+        setLocationByPlatform(true);
 
         jPanel1.setBorder(new javax.swing.border.MatteBorder(null));
 
@@ -121,7 +169,9 @@ DefaultMutableTreeNode ParentNode;
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 458, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -223,7 +273,7 @@ DefaultMutableTreeNode ParentNode;
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(jLabel9)
                         .addGap(0, 0, Short.MAX_VALUE)))
@@ -296,12 +346,11 @@ DefaultMutableTreeNode ParentNode;
                     .addComponent(ValueTextBox)
                     .addComponent(jTextField1)
                     .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel7))
-                        .addGap(0, 208, Short.MAX_VALUE))
-                    .addComponent(Delete_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jLabel7)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(Delete_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
@@ -373,12 +422,11 @@ DefaultMutableTreeNode ParentNode;
                     .addComponent(Reload_File, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                            .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -400,155 +448,181 @@ DefaultMutableTreeNode ParentNode;
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        getAccessibleContext().setAccessibleName("INI_EDITOR_V2.1.1");
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void Apply_ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Apply_ButtonActionPerformed
-    try{
-        if(ValueTextBox.getText().length()==0||(ValueTextBox.getText().length()==0)){
+        try {
+            if (ValueTextBox.getText().length() == 0 || (ValueTextBox.getText().length() == 0)) {
 
-        JOptionPane.showMessageDialog(this,"There Is No Selected Key To Edit!");
+                JOptionPane.showMessageDialog(this, "There Is No Selected Key To Edit!");
 
-}else if(Current_Section == null || Current_Selection == null){
-        JOptionPane.showMessageDialog(this,"There Is No Selected Key To Edit!");
+            } else if (Current_Section == null || Current_Selection == null) {
+                JOptionPane.showMessageDialog(this, "There Is No Selected Key To Edit!");
+            } else {
+                if (Section_Selected_Check == true) {
+
+                    System.out.println("Section Currently Applied");
+                    String Key;
+                    String Value;
+                    Ini.Section Root = ini.get(jTextField1.getText());
+                    String[] N = Root.getAll(jTextField1.getText(), String[].class);
+                    System.out.println(Arrays.toString(N));
+                } else {
+
+                    ini.put(Current_Section, Current_Selection, ValueTextBox.getText());
+
+                    ini.store();
+
                 }
-else{
-      ini.put(Current_Section,Current_Selection,ValueTextBox.getText());
- 
-      ini.store();
-        
-        }
-   
-        
-    }
-catch(IOException e){
-          System.out.println(e.getMessage()); 
-}     
- 
-    }//GEN-LAST:event_Apply_ButtonActionPerformed
 
+            }
+
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+
+    }//GEN-LAST:event_Apply_ButtonActionPerformed
+public static boolean isFileDirectoryExists(File file)
+
+  {
+    if (file.exists())
+    {
+      return true;
+    }
+    return false;
+  }
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
         // TODO add your handling code here:
         openfile();
         expandAllNodes(JTree);
 
     }//GEN-LAST:event_jMenuItem1ActionPerformed
- 
-    public void Create_New_File(){
-        try{
-                    Wini Ini;
-String Pathe ="";
+
+    public void Create_New_File() {
+        try {
+            Wini Ini;
+            String Pathe = "";
             JFileChooser fileChooser = new JFileChooser();
-           fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("INI_FILES", "ini"));
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                fileChooser.setAcceptAllFileFilterUsed(true);
-fileChooser.setDialogTitle("Specify a file to save");   
- 
-int userSelection = fileChooser.showSaveDialog(this);
- 
-if (userSelection == JFileChooser.APPROVE_OPTION) {
-    File fileToSave = fileChooser.getSelectedFile();
-    Pathe = fileToSave.getAbsolutePath();
+            fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("INI_FILES", "ini"));
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileChooser.setAcceptAllFileFilterUsed(true);
+            fileChooser.setDialogTitle("Specify a file to save");
 
-    System.out.println("Save as file: " + Pathe);
-    
-}    Ini = new Wini(new File(Pathe));
+            int userSelection = fileChooser.showSaveDialog(this);
 
-            Ini.put("block_name", "property_name_2", 45.6);
-            Ini.store();
-        // To catch basically any error related to writing to the file
-        // (The system cannot find the file specified)
-        }catch(Exception e){
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                File fileToSave = fileChooser.getSelectedFile();
+                Pathe = fileToSave.getAbsolutePath();
+                System.out.println("Save as file: " + Pathe);
+                fileToSave.createNewFile();
+
+            }
+
+            // To catch basically any error related to writing to the file
+            // (The system cannot find the file specified)
+        } catch (Exception e) {
             System.err.println(e.getMessage());
         }
-        
-        
+
     }
-    
-    
-public  void Wait() 
-{ 
-     
-     int i=0;
-while(i<=2000){    
-  Progress_Bar.setValue(i);    
-  i=i+20;  
 
+    public void Wait(int milli) {
 
- try { 
+        try {
 
+            Thread.sleep(milli);
 
- Thread.sleep(400); 
+        } catch (Exception e) {
 
-
- } 
-
- catch (Exception e) { 
-
- } 
-}
- } 
+        }
+    }
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField1ActionPerformed
 
     private void Create_New_SectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Create_New_SectionActionPerformed
+        try {
+            if (Section_Selected_Check == false) {
 
-          try{
-        if(Section.getText().length()==0||(Section.getText().length()==0)||Key.getText().length()==0||(Key.getText().length()==0)||Value.getText().length()==0||(Value.getText().length()==0)){
+                if (Section.getText().length() == 0 || (Section.getText().length() == 0) || Key.getText().length() == 0 || (Key.getText().length() == 0) || Value.getText().length() == 0 || (Value.getText().length() == 0)) {
 
-        JOptionPane.showMessageDialog(this,"There is an Empty Field!");
+                    JOptionPane.showMessageDialog(this, "There is an Empty Field!");
+                } else {
 
-}
-else{
-      ini.put(Section.getText(),Key.getText(),Value.getText());
- 
-      ini.store();
-        
+                    ini.put(Section.getText(), Key.getText(), Value.getText());
+                    ini.store();
+
+                }
+            } else {
+                int dialogResult = JOptionPane.showConfirmDialog(this, "Do you want to Add a Key To the Selected Section? - Section Selected is: " + Current_Section);
+                if (dialogResult == 0) {
+                    if (Key.getText().length() == 0 || (Key.getText().length() == 0) || Value.getText().length() == 0 || (Value.getText().length() == 0)) {
+                        JOptionPane.showMessageDialog(this, "There is an Empty Field!");
+
+                    } else {
+                        try {
+                            ini.put(Current_Section, Key.getText(), Value.getText());
+                            ini.store();
+
+                        } catch (IOException e) {
+                            System.out.println(e.getMessage());
+                        }
+                    }
+                } else {
+                    System.out.println("No Option");
+
+                }
+            }
+
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
         }
-   
-        
-    }
-catch(IOException e){
-          System.out.println(e.getMessage()); 
-}     
+
     }//GEN-LAST:event_Create_New_SectionActionPerformed
 
     private void Delete_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Delete_buttonActionPerformed
-if(Current_Selection != null){
-        int dialogResult = JOptionPane.showConfirmDialog(this, "Do you want to delete the Following?"+Current_Selection);
+        try {
+            if (Current_Selection != null || Current_Selection.length() >= 1 || Current_Section != null || Current_Section.length() >= 1) {
+                if (Section_Selected_Check == true) {
+                    int dialogResults = JOptionPane.showConfirmDialog(this, Current_Section + " is a section - ARE YOU SURE?");
+                    if (dialogResults == 0) {
+                        try {
+                            System.out.println(Current_Section);
+                            ini.remove(Current_Section);
+                            ini.store();
+                        } catch (Exception e) {
+                            System.err.println(e.getMessage());
+                        }
+                    } else {
+                        System.out.println("No Option");
 
-if(dialogResult == 0) {
-  System.out.println("Yes option");
-  if(Section_Selected_Check == true){
-      JOptionPane.showConfirmDialog(this, Current_Section +" is a section - ARE YOU SURE?");
+                    }
+                } else {
 
-      
-      try{
-          System.out.println(Current_Section);
-          ini.remove(Current_Section);
-            ini.store();
-      }catch(Exception e){
-            System.err.println(e.getMessage());
+                    int dialogResult = JOptionPane.showConfirmDialog(this, "Do you want to delete the Following? - " + Current_Selection);
+
+                    if (dialogResult == 0) {
+                        System.out.println("Yes option");
+
+                        ini.remove(Current_Section, Current_Selection);
+                        ini.store();
+
+                    } else {
+                        System.out.println("No Option");
+
+                    }
+                }
+
+            } else {
+                JOptionPane.showMessageDialog(this, "There Is no Key to Delete/The Key is not valid!");
+            }
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
         }
-  }
-  else{
-        try{
-      ini.remove(Current_Selection);
-            ini.store();
-        }catch(Exception e){
-            System.err.println(e.getMessage());
-        }
-  }
-  
-  
-} else {
-  System.out.println("No Option");
-}   
-}
-else{
-JOptionPane.showMessageDialog(this,"There Is no Key to Delete/The Key is not valid!");
-}// TODO add your handling code here:
+
     }//GEN-LAST:event_Delete_buttonActionPerformed
 
     private void ValueTextBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ValueTextBoxActionPerformed
@@ -559,36 +633,60 @@ JOptionPane.showMessageDialog(this,"There Is no Key to Delete/The Key is not val
         // TODO add your handling code here:
 
     }//GEN-LAST:event_Apply_ButtonFocusGained
+    private void Reload() {
+        try {
+            Progress = 0;
+            Progress_Bar.setValue(Progress);
+            ValueTextBox.setText("");
+            Section.setText("");
+            Key.setText("");
+            Value.setText("");
+            Progress = Progress + 20;
+            Progress_Bar.setValue(Progress);
 
+            if (Path == null || Path.length() <= 0) {
+                int dialogResult = JOptionPane.showConfirmDialog(this, "NO PATH FOUND! - DO YOU WANT TO NAVIGATE TO A VALID FILE?");
+                if (dialogResult == 0) {
+
+                    openfile();
+                } else {
+                    Progress_Bar.setValue(0);
+                    System.out.println("Exited");
+                    return;
+                }
+            } else {
+
+                Current_Selection = null;
+                Current_Section = null;
+                JTree.setModel(null);
+                Wait(500);
+                OpenFile(Path);
+                expandAllNodes(JTree);
+
+            }
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+
+    }
     private void Reload_FileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Reload_FileActionPerformed
-                  ValueTextBox.setText("");
-                  Section.setText("");
-                  Key.setText("");
-                  Value.setText("");
-                  JTree.setModel(null);
-                   Progress = Progress + 20;
-       Progress_Bar.setValue(Progress); 
-                  try{
-                  OpenFile(Path);
-                  expandAllNodes(JTree);
-                  
-                   }catch(IOException e){
-                    System.out.println(e.getMessage());  
-}
+        Reload();
     }//GEN-LAST:event_Reload_FileActionPerformed
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
-Create_New_File();
+        Create_New_File();
     }//GEN-LAST:event_jMenuItem2ActionPerformed
-private void expandAllNodes(JTree tree) {
-    int j = tree.getRowCount();
-    int i = 0;
-    while(i < j) {
-        tree.expandRow(i);
-        i += 1;
-        j = tree.getRowCount();
+    private void expandAllNodes(JTree tree) {
+
+        int j = tree.getRowCount();
+        int i = 0;
+        while (i < j) {
+            tree.expandRow(i);
+            i += 1;
+            j = tree.getRowCount();
+        }
     }
-}
+
     /**
      * @param args the command line arguments
      */
@@ -619,127 +717,133 @@ private void expandAllNodes(JTree tree) {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-               
+
                 new Frame().setVisible(true);
             }
         });
     }
-    
+
     /**
      *
      */
-    public void openfile(){
-    JFileChooser fileChooser = new JFileChooser();
-    fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
-     Res = fileChooser.showOpenDialog(this);
-    if (Res == JFileChooser.APPROVE_OPTION) {
-        
-        File selectedFile = fileChooser.getSelectedFile();
-        System.out.println("Selected file: " + selectedFile.getAbsolutePath());
-    // user selects a file
-     Path =  selectedFile.getAbsolutePath();
-     try{
-    OpenFile(Path);
-     JTree.getSelectionModel().addTreeSelectionListener(new Selector());
-    JTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-    }catch(IOException e){
-                    System.out.println(e.getMessage());  
-}
-}
+    public void openfile() {
 
-}
-  
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+        Res = fileChooser.showOpenDialog(this);
+        if (Res == JFileChooser.APPROVE_OPTION) {
 
-   public void OpenFile( String path ) throws IOException {
-      //load( path );
-      Progress = Progress + 10;
-       Progress_Bar.setValue(Progress); 
-
-    Read_INI(path);
-//System.out.println(Arrays.asList()); // method 1
-   }
-    public void Read_INI(String filename)
-    {
-        try {
-         ini = new Wini(new File(filename));
-        ParentNode = new DefaultMutableTreeNode(Path.substring(Path.lastIndexOf("\\")+1, Path.length()));
-                                 JTree.setModel(new javax.swing.tree.DefaultTreeModel(ParentNode));
-                                 
-           Progress = Progress + 20;
-       Progress_Bar.setValue(Progress);                       
-                                 
-System.out.println("Number of sections: "+ini.size()+"\n");
-        for (String sectionName: ini.keySet()) {
-            HeaderNode=new DefaultMutableTreeNode(sectionName);
-               ParentNode.add(HeaderNode);
-                   Section_list.add(sectionName);
-
-            //To make sure the user Does not Rush  Wait();
-                 Progress = Progress + 40;
-       Progress_Bar.setValue(Progress); 
-           // System.out.println("["+sectionName+"]");
-            Section section = ini.get(sectionName);
-            for (String optionKey: section.keySet()) {
-                 ContentNode=new DefaultMutableTreeNode(optionKey);
-               HeaderNode.add(ContentNode);
-               Progress = Progress + 30;
-       Progress_Bar.setValue(Progress); 
-              //  System.out.println("\t"+optionKey+"="+section.get(optionKey));
+            File selectedFile = fileChooser.getSelectedFile();
+            System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+            // user selects a file
+            Path = selectedFile.getAbsolutePath();
+            try {
+                OpenFile(Path);
+                JTree.getSelectionModel().addTreeSelectionListener(new Selector());
+                JTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
             }
         }
-        
-} 
-catch (IOException e) {
-     System.out.println("Configuration parse error: {}"+e.getMessage());
-      throw new RuntimeException("Configuration parse error " + filename + ": " + e.getMessage());
+
     }
-  }
-  public void ReturnVal_fromKey(String Key){
-      
-  }
-  private class Selector implements TreeSelectionListener {
-    public void valueChanged(TreeSelectionEvent event) {
-      MutableTreeNode CurrentNode = (MutableTreeNode) event.getNewLeadSelectionPath().getLastPathComponent();
-      Object Selected = event.getNewLeadSelectionPath().getLastPathComponent();
-      Object Parent = CurrentNode.getParent();
-       Object Value =null;
-      String out = Parent.toString();
-      Ini.Section section = ini.get(out);
-       
-       // Object Value = section.get(Selected.toString());
-        
-                  //OpenFile(Path);
-                  //expandAllNodes(JTree);
-                  if(Section_list.contains(Selected.toString())){
-                       System.out.println(Selected.toString());
-                      System.out.println("Section Selected\n");
-                      jTextField1.setText(Selected.toString());
-                      Value = "";
-                      Section_Selected_Check = true;
-                     Current_Section = Selected.toString();
-                        Current_Selection = "";
-                  }else{
-                      
+
+    public void OpenFile(String path) throws IOException {
+        //load( path );
+        Progress = Progress + 10;
+        Progress_Bar.setValue(Progress);
+
+        Read_INI(path);
+//System.out.println(Arrays.asList()); // method 1
+    }
+
+    public void Read_INI(String filename) {
+        try {
+            ini = new Wini(new File(filename));
+            ParentNode = new DefaultMutableTreeNode(Path.substring(Path.lastIndexOf("\\") + 1, Path.length()));
+            JTree.setModel(new javax.swing.tree.DefaultTreeModel(ParentNode));
+
+            Progress = Progress + 20;
+            Progress_Bar.setValue(Progress);
+
+            System.out.println("Number of sections: " + ini.size() + "\n");
+            for (String sectionName : ini.keySet()) {
+                HeaderNode = new DefaultMutableTreeNode(sectionName);
+                ParentNode.add(HeaderNode);
+                Section_list.add(sectionName);
+
+                //To make sure the user Does not Rush  Wait();
+                Progress = Progress + 40;
+                Progress_Bar.setValue(Progress);
+                // System.out.println("["+sectionName+"]");
+                Section section = ini.get(sectionName);
+                for (String optionKey : section.keySet()) {
+                    ContentNode = new DefaultMutableTreeNode(optionKey);
+                    HeaderNode.add(ContentNode);
+                    Progress = Progress + 30;
+                    Progress_Bar.setValue(Progress);
+                    //  System.out.println("\t"+optionKey+"="+section.get(optionKey));
+                }
+            }
+
+        } catch (IOException e) {
+            System.out.println("Configuration parse error: {}" + e.getMessage());
+            throw new RuntimeException("Configuration parse error " + filename + ": " + e.getMessage());
+        }
+    }
+
+    public void ReturnVal_fromKey(String Key) {
+
+    }
+
+    private class Selector implements TreeSelectionListener {
+
+        public void valueChanged(TreeSelectionEvent event) {
+            try {
+                MutableTreeNode CurrentNode = (MutableTreeNode) event.getNewLeadSelectionPath().getLastPathComponent();
+                Object Selected = event.getNewLeadSelectionPath().getLastPathComponent();
+                Object Parent = CurrentNode.getParent();
+                Object Value = null;
+                String out = Parent.toString();
+
+                Ini.Section section = ini.get(out);
+
+                //Object Value = section.get(Selected.toString());
+                //OpenFile(Path);
+                //expandAllNodes(JTree);
+                if (Section_list.contains(Selected.toString())) {
+                    System.out.println(Selected.toString());
+                    System.out.println("Section Selected\n");
+                    jTextField1.setText(Selected.toString());
+                    Value = "";
+                    Section_Selected_Check = true;
+                    Section.setEnabled(false);
+                    Current_Section = Selected.toString();
+                    Current_Selection = "";
+                } else {
+
                     Value = section.get(Selected.toString());
                     jTextField1.setText(Value.toString());
                     System.out.println("" + out + " Has " + Selected + " = " + Value.toString());
                     Section_Selected_Check = false;
+                    Section.setEnabled(true);
+
                     Current_Section = out;
                     Current_Selection = Selected.toString();
-                  }
+                }
 
-                  
-        
-    
-      
-    
-     // System.out.println("" + obj.toString());
-
+                // System.out.println("" + obj.toString());
+            } catch (NullPointerException e) {
+                System.out.println("Configuration parse error: {}" + e.getMessage());
+                throw new RuntimeException("\n Configuration parse error : " + e.getMessage());
+            } catch (Exception e) {
+                System.out.println("Unexcepted Exception");
+                e.printStackTrace();
+            }
+        }
     }
-  }
-   
 
- 
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Apply_Button;
     private javax.swing.JButton Create_New_Section;
