@@ -4,6 +4,7 @@
  */
 package ini__editor;
 //package windows.prefs;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -35,6 +36,8 @@ import java.util.concurrent.TimeUnit;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.File;
+import java.util.Scanner;
+import java.util.stream.Stream;
 import javax.swing.JDialog;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -61,6 +64,13 @@ public class Frame extends javax.swing.JFrame {
     String Current_Selection;
     boolean Section_Selected_Check = false;
     int TIME_VISIBLE = 3000;
+    List IP_List = new ArrayList();
+    List Integer_List = new ArrayList();
+    List Path_List = new ArrayList();
+    List Temprature_List = new ArrayList();
+    List Type_List = new ArrayList();
+    String Current_Syntax_Type;
+
     /**
      * Creates new form Frame
      */
@@ -77,38 +87,44 @@ public class Frame extends javax.swing.JFrame {
         ValueTextBox.setToolTipText("Enter the Value you would like to assign Here");
         Create_New_Section.setToolTipText("Click to Create the section");
         File file = new File("C:\\Ciena_Corporation\\config.ini");
-        try{
-        if(isFileDirectoryExists(file)){
-           
-       // JOptionPane.showMessageDialog(null, "INI File Auto Found in: "+file.getAbsolutePath(), "IMPORTANT MESSAGE", JOptionPane.INFORMATION_MESSAGE);
-        JOptionPane pane = new JOptionPane("INI File Auto Found in: "+file.getAbsolutePath(),JOptionPane.INFORMATION_MESSAGE);
-      JDialog dialog = pane.createDialog(null, "IMPORTANT MESSAGE");
-      dialog.setAlwaysOnTop(true);
-      dialog.setModal(false);
-      dialog.setVisible(true);
-          new Timer(TIME_VISIBLE, new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-          dialog.setVisible(false);
-        }
-      }).start();
-             Path = file.getAbsolutePath();
-           Read_INI(Path);
+        try {
+            if (isFileDirectoryExists(file)) {
+
+                // JOptionPane.showMessageDialog(null, "INI File Auto Found in: "+file.getAbsolutePath(), "IMPORTANT MESSAGE", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane pane = new JOptionPane("INI File Auto Found in: " + file.getAbsolutePath(), JOptionPane.INFORMATION_MESSAGE);
+                JDialog dialog = pane.createDialog(null, "IMPORTANT MESSAGE");
+                dialog.setAlwaysOnTop(true);
+                dialog.setModal(false);
+                dialog.setVisible(true);
+                new Timer(TIME_VISIBLE, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        dialog.setVisible(false);
+                    }
+                }).start();
+                Current_Selection = null;
+                Current_Section = null;
+                JTree.setModel(null);
+                Path = file.getPath();
+                OpenFile(Path);
+                JTree.getSelectionModel().addTreeSelectionListener(new Selector());
+                JTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
                 expandAllNodes(JTree);
+                //Reload();
 
-            }else{
-             System.out.println("INI File Could not Found in: C:/Ciena_Corporation/");
-       // JOptionPane.showMessageDialog(null, "INI File Could not Found in: C:/Ciena_Corporation/", "IMPORTANT MESSAGE", JOptionPane.INFORMATION_MESSAGE);            
+            } else {
+                System.out.println("INI File Could not Found in: C:/Ciena_Corporation/");
+                // JOptionPane.showMessageDialog(null, "INI File Could not Found in: C:/Ciena_Corporation/", "IMPORTANT MESSAGE", JOptionPane.INFORMATION_MESSAGE);
 
-        }
-        }catch (NullPointerException e) {
-                System.out.println("Configuration parse error: {}" + e.getMessage());
-                throw new RuntimeException("\n Configuration parse error : " + e.getMessage());
-            } catch (Exception e) {
-                System.out.println("Unexcepted Exception");
-                e.printStackTrace();
             }
-    
+        } catch (NullPointerException e) {
+            System.out.println("Configuration parse error: {}" + e.getMessage());
+            throw new RuntimeException("\n Configuration parse error : " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Unexcepted Exception");
+            e.printStackTrace();
+        }
+
     }
 
     @SuppressWarnings("unchecked")
@@ -291,6 +307,16 @@ public class Frame extends javax.swing.JFrame {
 
         jPanel4.setBorder(new javax.swing.border.MatteBorder(null));
 
+        ValueTextBox.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                ValueTextBoxFocusGained(evt);
+            }
+        });
+        ValueTextBox.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                ValueTextBoxMouseClicked(evt);
+            }
+        });
         ValueTextBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ValueTextBoxActionPerformed(evt);
@@ -320,7 +346,7 @@ public class Frame extends javax.swing.JFrame {
 
         jLabel1.setText("Current Value");
 
-        jLabel2.setText("Assign String Value");
+        jLabel2.setText("Assign Value");
         jLabel2.setToolTipText("");
 
         jLabel7.setFont(new java.awt.Font("Verdana", 1, 11)); // NOI18N
@@ -448,11 +474,8 @@ public class Frame extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        getAccessibleContext().setAccessibleName("INI_EDITOR_V2.1.1");
-
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
     private void Apply_ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Apply_ButtonActionPerformed
         try {
             if (ValueTextBox.getText().length() == 0 || (ValueTextBox.getText().length() == 0)) {
@@ -471,37 +494,179 @@ public class Frame extends javax.swing.JFrame {
                     String[] N = Root.getAll(jTextField1.getText(), String[].class);
                     System.out.println(Arrays.toString(N));
                 } else {
+                    if (Check_Syntax() == true) {
 
-                    ini.put(Current_Section, Current_Selection, ValueTextBox.getText());
+                        ini.put(Current_Section, Current_Selection, ValueTextBox.getText());
 
-                    ini.store();
+                        ini.store();
+                        ValueTextBox.setText("");
+                        JTree.clearSelection();
+                        Current_Selection = "";
+
+                    } else {
+                        JOptionPane.showMessageDialog(this, "The Syntax Does not Conform to the type " + Current_Syntax_Type + "\nValue Will NOT be written to the file");
+
+                    }
 
                 }
 
             }
+
+            Reload();
+            ValueTextBox.setText("");
 
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
 
     }//GEN-LAST:event_Apply_ButtonActionPerformed
-public static boolean isFileDirectoryExists(File file)
+    private boolean Check_Syntax() {
 
-  {
-    if (file.exists())
-    {
-      return true;
+        if (Current_Syntax_Type == "IP") {
+
+            if (ValueTextBox.getText().matches(new IP_Mask().pattern) == true) {
+                System.out.println("\nPassed\n");
+                return true;
+
+            } else {
+
+                System.out.println("\nFailed\n");
+                return false;
+            }
+        }
+        if (Current_Syntax_Type == "INT") {
+            try {
+                Integer.parseInt(ValueTextBox.getText());
+                if (ValueTextBox.getText().length() < 6) {
+                    System.out.println("\nPassed\n");
+                    return true;
+
+                } else {
+                    JOptionPane.showMessageDialog(this, "The Port cannot Be more than 5 Digits!! ");
+                    System.out.println("\nFailed\n");
+
+                    return false;
+
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("\nFailed\n");
+                return false;
+            }
+
+        }
+        if (Current_Syntax_Type == "TEMP") {
+            try {
+                Integer.parseInt(ValueTextBox.getText());
+              if (ValueTextBox.getText().length() < 4) {
+                    System.out.println("\nPassed\n");
+                    return true;
+
+                } else {
+                    JOptionPane.showMessageDialog(this, "The Temprature cannot Be more than 3 Digits!. Are you trying to cook the Lab?!");
+                    System.out.println("\nFailed\n");
+
+                    return false;
+
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("\nfailed\n");
+                return false;
+            }
+
+        }
+        return false;
     }
-    return false;
-  }
+
+    private static boolean isFileDirectoryExists(File file) {
+        if (file.exists()) {
+            return true;
+        }
+        return false;
+    }
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
         // TODO add your handling code here:
         openfile();
         expandAllNodes(JTree);
 
     }//GEN-LAST:event_jMenuItem1ActionPerformed
+    private void Read_To_List() {
+        String IP = "";
+        String STRING = "";
+        String INT = "";
+        String TEMP = "";
+        String PATH = "";
+        String TYPE = "";
+        try {
+            Scanner scanner = new Scanner(new File("C:\\Ciena_Corporation\\BlackList.txt"));
 
-    public void Create_New_File() {
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+
+                if (line.contains("IP")) {
+                    int iend = line.indexOf(":");
+                    if (iend != -1) {
+                        IP = line.substring(0, iend);
+                    }
+                    IP_List.add(IP);
+                } else if (line.contains("INT")) {
+                    int iend = line.indexOf(":");
+                    if (iend != -1) {
+                        INT = line.substring(0, iend);
+                    }
+                    Integer_List.add(INT);
+
+                } else if (line.contains("TEMP")) {
+                    int iend = line.indexOf(":");
+                    if (iend != -1) {
+                        TEMP = line.substring(0, iend);
+                    }
+                    Temprature_List.add(TEMP);
+
+                } else if (line.contains("PATH")) {
+                    int iend = line.indexOf(":");
+                    if (iend != -1) {
+                        PATH = line.substring(0, iend);
+                    }
+                    Path_List.add(PATH);
+
+                } else if (line.contains("TYPE")) {
+                    int iend = line.indexOf(":");
+                    if (iend != -1) {
+                        TYPE = line.substring(0, iend);
+                    }
+                    Type_List.add(TYPE);
+                }
+                // process the line
+
+            }
+            /*
+            for (int i = 0; i < IP_List.size(); i++) {
+                System.out.print((IP_List.get(i)).toString() + "\n");
+            }
+
+            for (int i = 0; i < Integer_List.size(); i++) {
+                System.out.print((Integer_List.get(i)).toString() + "\n");
+            }
+            for (int i = 0; i < String_List.size(); i++) {
+                System.out.print((String_List.get(i)).toString() + "\n");
+            }
+            for (int i = 0; i < Path_List.size(); i++) {
+                System.out.print((Path_List.get(i)).toString() + "\n");
+            }
+            for (int i = 0; i < Type_List.size(); i++) {
+                System.out.print((Type_List.get(i)).toString() + "\n");
+            }
+            for (int i = 0; i < Temprature_List.size(); i++) {
+                System.out.print((Temprature_List.get(i)).toString() + "\n");
+            }
+             */
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+        System.out.print("Read!");
+    }
+
+    private void Create_New_File() {
         try {
             Wini Ini;
             String Pathe = "";
@@ -529,7 +694,7 @@ public static boolean isFileDirectoryExists(File file)
 
     }
 
-    public void Wait(int milli) {
+    private void Wait(int milli) {
 
         try {
 
@@ -542,7 +707,6 @@ public static boolean isFileDirectoryExists(File file)
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField1ActionPerformed
-
     private void Create_New_SectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Create_New_SectionActionPerformed
         try {
             if (Section_Selected_Check == false) {
@@ -582,7 +746,6 @@ public static boolean isFileDirectoryExists(File file)
         }
 
     }//GEN-LAST:event_Create_New_SectionActionPerformed
-
     private void Delete_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Delete_buttonActionPerformed
         try {
             if (Current_Selection != null || Current_Selection.length() >= 1 || Current_Section != null || Current_Section.length() >= 1) {
@@ -624,15 +787,61 @@ public static boolean isFileDirectoryExists(File file)
         }
 
     }//GEN-LAST:event_Delete_buttonActionPerformed
-
     private void ValueTextBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ValueTextBoxActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_ValueTextBoxActionPerformed
 
+
+    }//GEN-LAST:event_ValueTextBoxActionPerformed
     private void Apply_ButtonFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_Apply_ButtonFocusGained
         // TODO add your handling code here:
 
     }//GEN-LAST:event_Apply_ButtonFocusGained
+    private void Check_Selected_type(String Selected) {
+
+        if (IP_List.contains(Selected)) {
+            System.out.println("IP Detected!");
+            Current_Syntax_Type = "IP";
+
+        } else if (Integer_List.contains(Selected)) {
+            System.out.println("Integer Detected!");
+            Current_Syntax_Type = "INT";
+
+        } else if (Path_List.contains(Selected)) {
+            System.out.println("Path Detected!");
+            Current_Syntax_Type = "PATH";
+
+        } else if (Temprature_List.contains(Selected)) {
+            System.out.println("Temprature Detected!");
+            Current_Syntax_Type = "TEMP";
+
+        } else if (Type_List.contains(Selected)) {
+            System.out.println("Type Detected!");
+            Current_Syntax_Type = "TYPE";
+
+        }
+        /*
+         switch(Current_Syntax_Type){
+            case "IP":
+                
+                break;
+                 case "INT":
+                break;
+                 case "PATH":
+                break;
+                 case"TEMP" :
+                break;
+                 case "TYPE":
+                break;
+                 default:
+                     
+                     break;
+            
+            
+        }
+         */
+        //                   System.out.println("'selected' is there in arraylist: "+Integer_List.contains(Selected.toString()));
+    }
+
     private void Reload() {
         try {
             Progress = 0;
@@ -659,9 +868,13 @@ public static boolean isFileDirectoryExists(File file)
                 Current_Selection = null;
                 Current_Section = null;
                 JTree.setModel(null);
+                Progress_Bar.setValue(Progress + 20);
+
                 Wait(500);
                 OpenFile(Path);
+
                 expandAllNodes(JTree);
+                Progress_Bar.setValue(Progress + 60);
 
             }
         } catch (IOException e) {
@@ -672,10 +885,43 @@ public static boolean isFileDirectoryExists(File file)
     private void Reload_FileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Reload_FileActionPerformed
         Reload();
     }//GEN-LAST:event_Reload_FileActionPerformed
-
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         Create_New_File();
     }//GEN-LAST:event_jMenuItem2ActionPerformed
+    private void ValueTextBoxFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_ValueTextBoxFocusGained
+        // TODO add your handling code here:
+
+
+    }//GEN-LAST:event_ValueTextBoxFocusGained
+    private void ValueTextBoxMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ValueTextBoxMouseClicked
+        try {
+            if (Current_Syntax_Type == "PATH") {
+
+                String Pathe = "";
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Excel_Files", "xlsx"));
+                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                fileChooser.setAcceptAllFileFilterUsed(true);
+                fileChooser.setDialogTitle("Specify a file to Assign");
+
+                int userSelection = fileChooser.showSaveDialog(this);
+
+                if (userSelection == JFileChooser.APPROVE_OPTION) {
+                    File fileToSave = fileChooser.getSelectedFile();
+                    Pathe = fileToSave.getAbsolutePath();
+                    System.out.println("Assign as Directory: " + Pathe);
+                    fileToSave.createNewFile();
+
+                }
+                ValueTextBox.setText(Pathe);
+            }
+            // To catch basically any error related to writing to the file
+            // (The system cannot find the file specified)
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+
+    }//GEN-LAST:event_ValueTextBoxMouseClicked
     private void expandAllNodes(JTree tree) {
 
         int j = tree.getRowCount();
@@ -687,14 +933,11 @@ public static boolean isFileDirectoryExists(File file)
         }
     }
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -723,10 +966,7 @@ public static boolean isFileDirectoryExists(File file)
         });
     }
 
-    /**
-     *
-     */
-    public void openfile() {
+    private void openfile() {
 
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
@@ -748,16 +988,14 @@ public static boolean isFileDirectoryExists(File file)
 
     }
 
-    public void OpenFile(String path) throws IOException {
-        //load( path );
-        Progress = Progress + 10;
-        Progress_Bar.setValue(Progress);
+    private void OpenFile(String path) throws IOException {
 
+        Read_To_List();
         Read_INI(path);
 //System.out.println(Arrays.asList()); // method 1
     }
 
-    public void Read_INI(String filename) {
+    private void Read_INI(String filename) {
         try {
             ini = new Wini(new File(filename));
             ParentNode = new DefaultMutableTreeNode(Path.substring(Path.lastIndexOf("\\") + 1, Path.length()));
@@ -792,7 +1030,7 @@ public static boolean isFileDirectoryExists(File file)
         }
     }
 
-    public void ReturnVal_fromKey(String Key) {
+    private void ReturnVal_fromKey(String Key) {
 
     }
 
@@ -821,15 +1059,15 @@ public static boolean isFileDirectoryExists(File file)
                     Current_Section = Selected.toString();
                     Current_Selection = "";
                 } else {
-
+                    Check_Selected_type(Selected.toString());
                     Value = section.get(Selected.toString());
                     jTextField1.setText(Value.toString());
                     System.out.println("" + out + " Has " + Selected + " = " + Value.toString());
                     Section_Selected_Check = false;
                     Section.setEnabled(true);
-
                     Current_Section = out;
                     Current_Selection = Selected.toString();
+
                 }
 
                 // System.out.println("" + obj.toString());
@@ -842,8 +1080,6 @@ public static boolean isFileDirectoryExists(File file)
             }
         }
     }
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Apply_Button;
     private javax.swing.JButton Create_New_Section;
@@ -878,4 +1114,9 @@ public static boolean isFileDirectoryExists(File file)
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
+}
+
+class IP_Mask {
+
+    String pattern = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
 }
